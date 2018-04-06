@@ -50,7 +50,7 @@ pub struct Http<B = ::Chunk> {
 /// address and then serving TCP connections accepted with the service provided.
 pub struct Server<S, B>
 where
-    B: Entity<Error=::Error>,
+    B: Entity,
 {
     protocol: Http<B::Data>,
     new_service: S,
@@ -164,12 +164,14 @@ impl<B: AsRef<[u8]> + 'static> Http<B> {
     /// The returned `Server` contains one method, `run`, which is used to
     /// actually run the server.
     pub fn bind<S, Bd>(&self, addr: &SocketAddr, new_service: S) -> ::Result<Server<S, Bd>>
-        where S: NewService<Request = Request<Body>, Response = Response<Bd>, Error = ::Error> + 'static,
-              Bd: Entity<Data=B, Error=::Error>,
+    where
+        S: NewService<Request=Request<Body>, Response=Response<Bd>> + 'static,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        Bd: Entity<Data=B>,
     {
         let handle = Handle::current();
-        let std_listener = StdTcpListener::bind(addr)?;
-        let listener = try!(TcpListener::from_std(std_listener, &handle));
+        let std_listener = StdTcpListener::bind(addr).map_err(::Error::new_listen)?;
+        let listener = TcpListener::from_std(std_listener, &handle).map_err(::Error::new_listen)?;
 
         Ok(Server {
             new_service: new_service,
@@ -187,13 +189,15 @@ impl<B: AsRef<[u8]> + 'static> Http<B> {
     /// `new_service` object provided as well, creating a new service per
     /// connection.
     pub fn serve_addr<S, Bd>(&self, addr: &SocketAddr, new_service: S) -> ::Result<Serve<AddrIncoming, S>>
-        where S: NewService<Request = Request<Body>, Response = Response<Bd>, Error = ::Error>,
-              Bd: Entity<Data=B, Error=::Error>,
+    where
+        S: NewService<Request=Request<Body>, Response=Response<Bd>>,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        Bd: Entity<Data=B>,
     {
         let handle = Handle::current();
-        let std_listener = StdTcpListener::bind(addr)?;
-        let listener = TcpListener::from_std(std_listener, &handle)?;
-        let mut incoming = AddrIncoming::new(listener, handle.clone(), self.sleep_on_errors)?;
+        let std_listener = StdTcpListener::bind(addr).map_err(::Error::new_listen)?;
+        let listener = TcpListener::from_std(std_listener, &handle).map_err(::Error::new_listen)?;
+        let mut incoming = AddrIncoming::new(listener, handle.clone(), self.sleep_on_errors).map_err(::Error::new_listen)?;
         if self.keep_alive {
             incoming.set_keepalive(Some(Duration::from_secs(90)));
         }
@@ -209,12 +213,15 @@ impl<B: AsRef<[u8]> + 'static> Http<B> {
     /// `new_service` object provided as well, creating a new service per
     /// connection.
     pub fn serve_addr_handle<S, Bd>(&self, addr: &SocketAddr, handle: &Handle, new_service: S) -> ::Result<Serve<AddrIncoming, S>>
-        where S: NewService<Request = Request<Body>, Response = Response<Bd>, Error = ::Error>,
-              Bd: Entity<Data=B, Error=::Error>,
+    where
+        S: NewService<Request = Request<Body>, Response = Response<Bd>>,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        Bd: Entity<Data=B>,
     {
-        let std_listener = StdTcpListener::bind(addr)?;
-        let listener = TcpListener::from_std(std_listener, &handle)?;
-        let mut incoming = AddrIncoming::new(listener, handle.clone(), self.sleep_on_errors)?;
+        let std_listener = StdTcpListener::bind(addr).map_err(::Error::new_listen)?;
+        let listener = TcpListener::from_std(std_listener, &handle).map_err(::Error::new_listen)?;
+        let mut incoming = AddrIncoming::new(listener, handle.clone(), self.sleep_on_errors).map_err(::Error::new_listen)?;
+
         if self.keep_alive {
             incoming.set_keepalive(Some(Duration::from_secs(90)));
         }
@@ -225,10 +232,12 @@ impl<B: AsRef<[u8]> + 'static> Http<B> {
     ///
     /// This method allows the ability to share a `Core` with multiple servers.
     pub fn serve_incoming<I, S, Bd>(&self, incoming: I, new_service: S) -> Serve<I, S>
-        where I: Stream<Error=::std::io::Error>,
-              I::Item: AsyncRead + AsyncWrite,
-              S: NewService<Request = Request<Body>, Response = Response<Bd>, Error = ::Error>,
-              Bd: Entity<Data=B, Error=::Error>,
+    where
+        I: Stream<Error=::std::io::Error>,
+        I::Item: AsyncRead + AsyncWrite,
+        S: NewService<Request = Request<Body>, Response = Response<Bd>>,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        Bd: Entity<Data=B>,
     {
         Serve {
             incoming: incoming,
@@ -277,9 +286,11 @@ impl<B: AsRef<[u8]> + 'static> Http<B> {
     /// # fn main() {}
     /// ```
     pub fn serve_connection<S, I, Bd>(&self, io: I, service: S) -> Connection<I, S>
-        where S: Service<Request = Request<Body>, Response = Response<Bd>, Error = ::Error>,
-              Bd: Entity<Error=::Error>,
-              I: AsyncRead + AsyncWrite,
+    where
+        S: Service<Request = Request<Body>, Response = Response<Bd>>,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        Bd: Entity,
+        I: AsyncRead + AsyncWrite,
     {
         let mut conn = proto::Conn::new(io);
         if !self.keep_alive {
@@ -339,15 +350,19 @@ impl Future for Run {
 
 
 impl<S, B> Server<S, B>
-    where S: NewService<Request = Request<Body>, Response = Response<B>, Error = ::Error> + Send + 'static,
-          <S as NewService>::Instance: Send,
-          <<S as NewService>::Instance as Service>::Future: Send,
-          B: Entity<Error=::Error> + Send + 'static,
-          B::Data: Send,
+where
+    S: NewService<Request = Request<Body>, Response = Response<B>> + Send + 'static,
+    S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+    <S as NewService>::Instance: Send,
+    <<S as NewService>::Instance as Service>::Future: Send,
+    B: Entity + Send + 'static,
+    B::Data: Send,
 {
     /// Returns the local address that this server is bound to.
     pub fn local_addr(&self) -> ::Result<SocketAddr> {
-        Ok(try!(self.listener.local_addr()))
+        //TODO: this shouldn't return an error at all, but should get the
+        //local_addr at construction
+        self.listener.local_addr().map_err(::Error::new_io)
     }
 
     /// Configure the amount of time this server will wait for a "graceful
@@ -391,7 +406,7 @@ impl<S, B> Server<S, B>
 
         let mut incoming = match AddrIncoming::new(listener, handle.clone(), protocol.sleep_on_errors) {
             Ok(incoming) => incoming,
-            Err(err) => return Run(Box::new(future::err(err.into()))),
+            Err(err) => return Run(Box::new(future::err(::Error::new_listen(err)))),
         };
 
         if protocol.keep_alive {
@@ -441,10 +456,11 @@ impl<S, B> Server<S, B>
         let main_execution = shutdown_signal.select(srv).then(move |result| {
             match result {
                 Ok(_) => {},
+                //Err((e, _other)) => return future::Either::A(future::err(::Error::new_accept(e)))
                 Err(future::Either::Left((e, _other))) =>
                     return future::Either::Left(future::err(e)),
                 Err(future::Either::Right((e, _other))) =>
-                    return future::Either::Left(future::err(e.into())),
+                    return future::Either::Left(future::err(::Error::new_accept(e))),
             }
 
             // Ok we've stopped accepting new connections at this point, but we want
@@ -459,8 +475,9 @@ impl<S, B> Server<S, B>
             future::Either::Right(wait.select(timeout).then(|result| {
                 match result {
                     Ok(_) => Ok(()),
-                    Err(future::Either::Left((e, _))) => Err(e.into()),
-                    Err(future::Either::Right((e, _))) => Err(e.into())
+                    //TODO: error variant should be "timed out waiting for graceful shutdown"
+                    Err(future::Either::Left((e, _))) => Err(::Error::new_io(e)),
+                    Err(future::Either::Right((e, _))) => Err(::Error::new_io(e))
                 }
             }))
         });
@@ -469,11 +486,10 @@ impl<S, B> Server<S, B>
     }
 }
 
-impl<S: fmt::Debug, B: Entity<Error=::Error>> fmt::Debug for Server<S, B>
+impl<S: fmt::Debug, B: Entity> fmt::Debug for Server<S, B>
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Server")
-         .field("reactor", &"...")
          .field("listener", &self.listener)
          .field("new_service", &self.new_service)
          .field("protocol", &self.protocol)
@@ -505,15 +521,16 @@ impl<I, S, B> Stream for Serve<I, S>
 where
     I: Stream<Error=io::Error>,
     I::Item: AsyncRead + AsyncWrite,
-    S: NewService<Request=Request<Body>, Response=Response<B>, Error=::Error>,
-    B: Entity<Error=::Error>,
+    S: NewService<Request=Request<Body>, Response=Response<B>>,
+    S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+    B: Entity,
 {
     type Item = Connection<I::Item, S::Instance>;
     type Error = ::Error;
 
     fn poll_next(&mut self, cx: &mut task::Context) -> Poll<Option<Self::Item>, Self::Error> {
-        if let Some(io) = try_ready!(self.incoming.poll_next(cx)) {
-            let service = self.new_service.new_service()?;
+        if let Some(io) = try_ready!(self.incoming.poll_next(cx).map_err(::Error::new_accept)) {
+            let service = self.new_service.new_service().map_err(::Error::new_user_new_service)?;
             Ok(Async::Ready(Some(self.protocol.serve_connection(io, service))))
         } else {
             Ok(Async::Ready(None))
@@ -585,6 +602,12 @@ impl AddrIncoming {
     fn set_keepalive(&mut self, dur: Option<Duration>) {
         self.keep_alive_timeout = dur;
     }
+
+    /*
+    fn set_sleep_on_errors(&mut self, val: bool) {
+        self.sleep_on_errors = val;
+    }
+    */
 }
 
 impl Stream for AddrIncoming {
@@ -805,9 +828,9 @@ mod hyper_service {
         S: Service<
             Request=Request<Body>,
             Response=Response<B>,
-            Error=::Error,
         >,
-        B: Entity<Error=::Error>,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+        B: Entity,
     {}
 
     impl<S, B> HyperService for S
@@ -815,10 +838,10 @@ mod hyper_service {
         S: Service<
             Request=Request<Body>,
             Response=Response<B>,
-            Error=::Error,
         >,
+        S::Error: Into<Box<::std::error::Error + Send + Sync>>,
         S: Sealed,
-        B: Entity<Error=::Error>,
+        B: Entity,
     {
         type ResponseBody = B;
         type Sealed = Opaque;

@@ -38,10 +38,10 @@ impl<T, U> Sender<T, U> {
                 // there's room in the queue, but does the Connection
                 // want a message yet?
                 self.giver.poll_want(cx)
-                    .map_err(|_| ::Error::Closed)
+                    .map_err(|_| ::Error::new_closed())
             },
             Ok(Async::Pending) => Ok(Async::Pending),
-            Err(_) => Err(::Error::Closed),
+            Err(_) => Err(::Error::new_closed()),
         }
     }
 
@@ -183,9 +183,12 @@ mod tests {
             drop(rx);
 
             promise.then(|fulfilled| {
-                let res = fulfilled.expect("fulfilled");
-                match res.unwrap_err() {
-                    (::Error::Cancel(_), Some(_)) => (),
+                let err = fulfilled
+                    .expect("fulfilled")
+                    .expect_err("promise should error");
+
+                match (err.0.kind(), err.1) {
+                    (&::error::Kind::Canceled, Some(_)) => (),
                     e => panic!("expected Error::Cancel(_), found {:?}", e),
                 }
 

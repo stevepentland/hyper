@@ -1,5 +1,3 @@
-use std::io;
-
 use bytes::Bytes;
 use futures::{Async, Future, Poll, Stream};
 use futures::task;
@@ -8,10 +6,9 @@ use http::{Request, Response, StatusCode};
 
 use proto::body::Entity;
 use proto::{Body, BodyLength, Conn, Http1Transaction, MessageHead, RequestHead, RequestLine, ResponseHead};
+use service::Service;
 
-use ::service::Service;
-
-pub struct Dispatcher<D, Bs, I, B, T> {
+pub(crate) struct Dispatcher<D, Bs, I, B, T> {
     conn: Conn<I, B, T>,
     dispatch: D,
     body_tx: Option<::proto::body::Sender>,
@@ -19,7 +16,7 @@ pub struct Dispatcher<D, Bs, I, B, T> {
     is_closing: bool,
 }
 
-pub trait Dispatch {
+pub(crate) trait Dispatch {
     type PollItem;
     type PollBody;
     type RecvItem;
@@ -49,7 +46,7 @@ where
     I: AsyncRead + AsyncWrite,
     B: AsRef<[u8]>,
     T: Http1Transaction,
-    Bs: Entity<Data=B, Error=::Error>,
+    Bs: Entity<Data=B>,
 {
     pub fn new(dispatch: D, conn: Conn<I, B, T>) -> Self {
         Dispatcher {
@@ -100,7 +97,7 @@ where
 
         if self.is_done() {
             if should_shutdown {
-                try_ready!(self.conn.shutdown(cx));
+                try_ready!(self.conn.shutdown(cx).map_err(::Error::new_shutdown));
             }
             self.conn.take_error()?;
             Ok(Async::Ready(()))
@@ -154,7 +151,7 @@ where
                             return Ok(Async::Pending);
                         }
                         Err(e) => {
-                            body.send_error(::Error::Io(e));
+                            body.send_error(::Error::new_body(e));
                         }
                     }
                 } else {
@@ -227,14 +224,14 @@ where
             } else if !self.conn.can_buffer_body() {
                 try_ready!(self.poll_flush(cx));
             } else if let Some(mut body) = self.body_rx.take() {
-                let chunk = match body.poll_data(cx)? {
+                let chunk = match body.poll_data(cx).map_err(::Error::new_user_body)? {
                     Async::Ready(Some(chunk)) => {
                         self.body_rx = Some(body);
                         chunk
                     },
                     Async::Ready(None) => {
                         if self.conn.can_write_body() {
-                            self.conn.write_body(cx,  None)?;
+                            self.conn.write_body(cx, None).map_err(::Error::new_body_write)?;
                         }
                         continue;
                     },
@@ -245,7 +242,7 @@ where
                 };
 
                 if self.conn.can_write_body() {
-                    self.conn.write_body(cx, Some(chunk))?;
+                    self.conn.write_body(cx, Some(chunk)).map_err(::Error::new_body_write)?;
                 // This allows when chunk is `None`, or `Some([])`.
                 } else if chunk.as_ref().len() == 0 {
                     // ok
@@ -261,7 +258,7 @@ where
     fn poll_flush(&mut self, cx: &mut task::Context) -> Poll<(), ::Error> {
         self.conn.flush(cx).map_err(|err| {
             debug!("error writing: {}", err);
-            err.into()
+            ::Error::new_body_write(err)
         })
     }
 
@@ -296,7 +293,7 @@ where
     I: AsyncRead + AsyncWrite,
     B: AsRef<[u8]>,
     T: Http1Transaction,
-    Bs: Entity<Data=B, Error=::Error>,
+    Bs: Entity<Data=B>,
 {
     type Item = ();
     type Error = ::Error;
@@ -320,8 +317,9 @@ impl<S> Server<S> where S: Service {
 
 impl<S, Bs> Dispatch for Server<S>
 where
-    S: Service<Request=Request<Body>, Response=Response<Bs>, Error=::Error>,
-    Bs: Entity<Error=::Error>,
+    S: Service<Request=Request<Body>, Response=Response<Bs>>,
+    S::Error: Into<Box<::std::error::Error + Send + Sync>>,
+    Bs: Entity,
 {
     type PollItem = MessageHead<StatusCode>;
     type PollBody = Bs;
@@ -329,7 +327,7 @@ where
 
     fn poll_msg(&mut self, cx: &mut task::Context) -> Poll<Option<(Self::PollItem, Option<Self::PollBody>)>, ::Error> {
         if let Some(mut fut) = self.in_flight.take() {
-            let resp = match fut.poll(cx)? {
+            let resp = match fut.poll(cx).map_err(::Error::new_user_service)? {
                 Async::Ready(res) => res,
                 Async::Pending => {
                     self.in_flight = Some(fut);
@@ -391,7 +389,7 @@ impl<B> Client<B> {
 
 impl<B> Dispatch for Client<B>
 where
-    B: Entity<Error=::Error>,
+    B: Entity,
 {
     type PollItem = RequestHead;
     type PollBody = B;
@@ -445,7 +443,7 @@ where
                     let _ = cb.send(Ok(res));
                     Ok(())
                 } else {
-                    Err(::Error::Io(io::Error::new(io::ErrorKind::InvalidData, "response received without matching request")))
+                    Err(::Error::new_mismatched_response())
                 }
             },
             Err(err) => {
@@ -507,12 +505,17 @@ mod tests {
 
             let a1 = dispatcher.poll(cx).expect("error should be sent on channel");
             assert!(a1.is_ready(), "dispatcher should be closed");
-            let result = res_rx.poll(cx)
+            let async = res_rx.poll(cx)
                 .expect("callback poll");
 
-            match result {
-                Async::Ready(Err((::Error::Cancel(_), Some(_)))) => (),
-                other => panic!("expected Err(Canceled), got {:?}", other),
+            let err = match async {
+                Async::Ready(result) => result.unwrap_err(),
+                Async::Pending => panic!("callback should be ready"),
+            };
+
+            match (err.0.kind(), err.1) {
+                (&::error::Kind::Canceled, Some(_)) => (),
+                other => panic!("expected Canceled, got {:?}", other),
             }
             Ok::<_, ()>(())
         })).unwrap();

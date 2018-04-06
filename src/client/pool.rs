@@ -218,16 +218,22 @@ impl<T: Closed> PoolInner<T> {
 
 
 impl<T: Closed + Send + 'static> Pool<T> {
-    fn spawn_expired_interval(&mut self, cx: &mut task::Context) -> Result<(), ::Error> {
+    fn spawn_expired_interval(&mut self, cx: &mut task::Context) {
+        let exe = if let Some(exe) = cx.executor() {
+            exe
+        } else {
+            return
+        };
+
         let (dur, rx) = {
             let mut inner = self.inner.lock().unwrap();
 
             if !inner.enabled {
-                return Ok(());
+                return
             }
 
             if inner.idle_interval_ref.is_some() {
-                return Ok(());
+                return
             }
 
             if let Some(dur) = inner.timeout {
@@ -235,16 +241,17 @@ impl<T: Closed + Send + 'static> Pool<T> {
                 inner.idle_interval_ref = Some(tx);
                 (dur, rx)
             } else {
-                return Ok(());
+                return
             }
         };
 
         let interval = Interval::new(dur);
-        super::execute(IdleInterval {
+        // This task isn't essential, so don't panic if spawn fails.
+        let _ = exe.spawn(Box::new(IdleInterval {
             interval: interval,
             pool: Arc::downgrade(&self.inner),
             pool_drop_notifier: rx,
-        }, cx)
+        }));
     }
 }
 
@@ -363,7 +370,7 @@ impl<T: Closed + Send + 'static> Future for Checkout<T> {
 
     fn poll(&mut self, cx: &mut task::Context) -> Poll<Self::Item, Self::Error> {
         if !self.spawned_expired_interval {
-            self.pool.spawn_expired_interval(cx)?;
+            self.pool.spawn_expired_interval(cx);
             self.spawned_expired_interval = true;
         }
 
@@ -515,7 +522,8 @@ mod tests {
         let mut pool = Pool::new(true, Some(Duration::from_millis(100)));
 
         block_on(future::lazy(|cx| {
-            pool.spawn_expired_interval(cx)
+            pool.spawn_expired_interval(cx);
+            Ok::<_, ()>(())
         })).unwrap();
         let key = Arc::new("foo".to_string());
 
