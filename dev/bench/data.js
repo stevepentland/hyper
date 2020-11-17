@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605651049018,
+  "lastUpdate": 1605651202983,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -261,6 +261,144 @@ window.BENCHMARK_DATA = {
             "name": "http2_req_100kb",
             "value": 134037,
             "range": "± 4139",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "distinct": true,
+          "id": "2a19ab74ed69bc776da25544e98979c9fb6e1834",
+          "message": "feat(http1): Make HTTP/1 support an optional feature\n\ncc #2251\n\nBREAKING CHANGE: This puts all HTTP/1 methods and support behind an\n  `http1` cargo feature, which will not be enabled by default. To use\n  HTTP/1, add `features = [\"http1\"]` to the hyper dependency in your\n  `Cargo.toml`.",
+          "timestamp": "2020-11-17T10:42:20-08:00",
+          "tree_id": "9f96eaaa5c228f8eba653b9ef2cfec2d099f3f10",
+          "url": "https://github.com/stevepentland/hyper/commit/2a19ab74ed69bc776da25544e98979c9fb6e1834"
+        },
+        "date": 1605651198545,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http1_body_both_100kb",
+            "value": 138483,
+            "range": "± 16400",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_body_both_10mb",
+            "value": 11576930,
+            "range": "± 1751421",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_get",
+            "value": 44305,
+            "range": "± 6136",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_empty",
+            "value": 271900,
+            "range": "± 34011",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_req_10kb_100_chunks",
+            "value": 52009375,
+            "range": "± 835440",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_req_10mb",
+            "value": 73804755,
+            "range": "± 6430063",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_res_10mb",
+            "value": 73508989,
+            "range": "± 4443380",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_res_1mb",
+            "value": 5063828,
+            "range": "± 799043",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_post",
+            "value": 50628,
+            "range": "± 4663",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_get",
+            "value": 82144,
+            "range": "± 10243",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_empty",
+            "value": 222569,
+            "range": "± 31319",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks",
+            "value": 12010061,
+            "range": "± 1025775",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks_adaptive_window",
+            "value": 12740502,
+            "range": "± 9314971",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks_max_window",
+            "value": 12035711,
+            "range": "± 9049322",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10mb",
+            "value": 64504851,
+            "range": "± 10303708",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_res_10mb",
+            "value": 64939092,
+            "range": "± 6816509",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_res_1mb",
+            "value": 6692410,
+            "range": "± 1033812",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_post",
+            "value": 95651,
+            "range": "± 13230",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_req_100kb",
+            "value": 171381,
+            "range": "± 18868",
             "unit": "ns/iter"
           }
         ]
