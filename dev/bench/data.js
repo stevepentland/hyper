@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605665643662,
+  "lastUpdate": 1605737414824,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -89,6 +89,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 48178,
             "range": "± 1331",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bdb5e5d6946f4e3f8115a6b1683aff6a04df73de",
+          "message": "feat(server): Make the `server` code an optional feature (#2334)\n\ncc #2223 \r\n\r\nBREAKING CHANGE: The HTTP server code is now an optional feature. To\r\n  enable the server, add `features = [\"server\"]` to the dependency in\r\n  your `Cargo.toml`.",
+          "timestamp": "2020-11-18T11:02:20-08:00",
+          "tree_id": "260a94fe0611cc0d6d30c331e182fd0bfcc347cf",
+          "url": "https://github.com/stevepentland/hyper/commit/bdb5e5d6946f4e3f8115a6b1683aff6a04df73de"
+        },
+        "date": 1605737410341,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 49203,
+            "range": "± 6350",
             "unit": "ns/iter"
           }
         ]
