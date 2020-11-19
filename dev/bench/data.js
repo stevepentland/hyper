@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605752028736,
+  "lastUpdate": 1605823800472,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -301,6 +301,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 59674,
             "range": "± 16766",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ed2b22a7f66899d338691552fbcb6c0f2f4e06b9",
+          "message": "feat(lib): disable all optional features by default (#2336)\n\nBREAKING CHANGE: All optional features have been disabled by default.",
+          "timestamp": "2020-11-19T10:05:39-08:00",
+          "tree_id": "6e1ed1ba8f1fec285f11643f67ff48ea7e92a9a5",
+          "url": "https://github.com/stevepentland/hyper/commit/ed2b22a7f66899d338691552fbcb6c0f2f4e06b9"
+        },
+        "date": 1605823796407,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 49556,
+            "range": "± 2459",
             "unit": "ns/iter"
           }
         ]
