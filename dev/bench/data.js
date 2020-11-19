@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1605737613537,
+  "lastUpdate": 1605751820413,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -241,6 +241,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 70255,
             "range": "± 26257",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "eliza@buoyant.io",
+            "name": "Eliza Weisman",
+            "username": "hawkw"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "abb6471690f796e1b96bb2d7b1042f424d69f169",
+          "message": "refactor(client): use tokio's TcpSocket for more sockopts (#2335)\n\nSigned-off-by: Eliza Weisman <eliza@buoyant.io>",
+          "timestamp": "2020-11-18T14:45:45-08:00",
+          "tree_id": "c8d1bedaa9af64428ba5cdc93170b1c62cc3564e",
+          "url": "https://github.com/stevepentland/hyper/commit/abb6471690f796e1b96bb2d7b1042f424d69f169"
+        },
+        "date": 1605751815661,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 59674,
+            "range": "± 16766",
             "unit": "ns/iter"
           }
         ]
