@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1606342578879,
+  "lastUpdate": 1606342590161,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -511,6 +511,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 53447,
             "range": "± 7602",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a470446deb2cb2c0e3700f67d9f70097d0d7d75f",
+          "message": "chore(error): remove undocumented public error module (#2344)",
+          "timestamp": "2020-11-25T12:52:07-08:00",
+          "tree_id": "c1accd6ae40bf4b1a972ba66ccfaa01429845765",
+          "url": "https://github.com/stevepentland/hyper/commit/a470446deb2cb2c0e3700f67d9f70097d0d7d75f"
+        },
+        "date": 1606342585491,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 56174,
+            "range": "± 4137",
             "unit": "ns/iter"
           }
         ]
