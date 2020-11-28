@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1606342752943,
+  "lastUpdate": 1606544152384,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -269,6 +269,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 46713,
             "range": "± 2947",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "robert@octarineparrot.com",
+            "name": "Robert Clipsham",
+            "username": "mrmonday"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1ba2a141a6f8736446ff4a0111df347c0dc66f6c",
+          "message": "test(client): Upgrade libpnet depedency to 0.27.2 [#2347] (#2348)\n\nAdditionally, only depend on pnet_datalink to reduce compile times.\n\nCloses #2347",
+          "timestamp": "2020-11-27T21:55:03-08:00",
+          "tree_id": "4b365d0f3aedef52acb5f5648720da602aa165f4",
+          "url": "https://github.com/stevepentland/hyper/commit/1ba2a141a6f8736446ff4a0111df347c0dc66f6c"
+        },
+        "date": 1606544147654,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 47524,
+            "range": "± 4079",
             "unit": "ns/iter"
           }
         ]
