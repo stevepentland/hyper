@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1606755693115,
+  "lastUpdate": 1606755721019,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -299,6 +299,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 47524,
             "range": "± 4079",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "faern@faern.net",
+            "name": "Linus Färnstrand",
+            "username": "faern"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "21dea2114574bbeda41bad5dff5e8e3613352124",
+          "message": "chore(dependencies): upgrade socket2 (#2349)\n\nUpgrades to a version not making invalid assumptions about\nthe memory layout of std::net::SocketAddr",
+          "timestamp": "2020-11-30T05:48:28-08:00",
+          "tree_id": "9ab22d866d6f8bd5c19045971f7def89440f4b46",
+          "url": "https://github.com/stevepentland/hyper/commit/21dea2114574bbeda41bad5dff5e8e3613352124"
+        },
+        "date": 1606755716045,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 70405,
+            "range": "± 4846",
             "unit": "ns/iter"
           }
         ]
