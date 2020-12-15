@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1607045332995,
+  "lastUpdate": 1607996696764,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -419,6 +419,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 70014,
             "range": "± 8757",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "info@bnoordhuis.nl",
+            "name": "Ben Noordhuis",
+            "username": "bnoordhuis"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7d9a5806e146798d0cbe67672bbe3ad5ae680393",
+          "message": "refactor(http1): change HTTP2->1.1 warning to debug (#2354)\n\nWe use hyper in a proxy-like way where an incoming HTTP/2 request is\r\nproxied to a HTTP/1 backend and it was reported that the protocol\r\ncoercion warnings were a limiting factor in the total throughput\r\nof the system.\r\n\r\nWhile it can be worked around by explicitly setting the request version\r\nto HTTP_11, it seems likely other people also hit this performance snag.\r\nThat's why this commit changes them from warnings to debug messages.",
+          "timestamp": "2020-12-14T13:57:32-08:00",
+          "tree_id": "9e3c4f830981935a989cd5e49ed4969a219ee850",
+          "url": "https://github.com/stevepentland/hyper/commit/7d9a5806e146798d0cbe67672bbe3ad5ae680393"
+        },
+        "date": 1607996691979,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 50738,
+            "range": "± 2140",
             "unit": "ns/iter"
           }
         ]
