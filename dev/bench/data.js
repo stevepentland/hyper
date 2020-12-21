@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1608590716694,
+  "lastUpdate": 1608590746410,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1021,6 +1021,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 48185,
             "range": "± 2143",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "46450720+bishtpawan@users.noreply.github.com",
+            "name": "Pawan Singh Bisht",
+            "username": "bishtpawan"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "6c593c292508f31a2986d5ddac3fb23b234a0e2c",
+          "message": "refactor(error): use `matches!` macro in `Error::is_*` methods (#2367)",
+          "timestamp": "2020-12-21T12:25:47-08:00",
+          "tree_id": "c61537b497a46b23e64414fa1f2c822dadd22fc4",
+          "url": "https://github.com/stevepentland/hyper/commit/6c593c292508f31a2986d5ddac3fb23b234a0e2c"
+        },
+        "date": 1608590741984,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 61209,
+            "range": "± 27158",
             "unit": "ns/iter"
           }
         ]
