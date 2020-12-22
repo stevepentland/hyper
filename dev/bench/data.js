@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1608671609184,
+  "lastUpdate": 1608671635155,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -539,6 +539,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 40736,
             "range": "± 7047",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "pankajchaudhary172@gmail.com",
+            "name": "Pankaj Chaudhary",
+            "username": "PankajChaudhary5"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3b3077da1f891b09de18320d9f6ccf94f136943d",
+          "message": "refactor(http1): updated Encoder/Decoder match with the matches macro (#2368)",
+          "timestamp": "2020-12-22T10:50:57-08:00",
+          "tree_id": "954af38876df04f6db5c6ee06c14b56137895d6c",
+          "url": "https://github.com/stevepentland/hyper/commit/3b3077da1f891b09de18320d9f6ccf94f136943d"
+        },
+        "date": 1608671629414,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 51700,
+            "range": "± 1730",
             "unit": "ns/iter"
           }
         ]
