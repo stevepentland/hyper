@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1609210181399,
+  "lastUpdate": 1609210186253,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1261,6 +1261,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 47670,
             "range": "± 1717",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mussitantesmortem@gmail.com",
+            "name": "Maxim Zhukov",
+            "username": "Mephistophiles"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "510b998ff3dc75e0dfc7e236212f5fef33142ad1",
+          "message": "chore(dev-dependencies): bump url to 2.2 (#2379)",
+          "timestamp": "2020-12-28T15:52:28-08:00",
+          "tree_id": "cd9b46cf00546ee0223f287f33d1698b9c2ee161",
+          "url": "https://github.com/stevepentland/hyper/commit/510b998ff3dc75e0dfc7e236212f5fef33142ad1"
+        },
+        "date": 1609210179666,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 54193,
+            "range": "± 4943",
             "unit": "ns/iter"
           }
         ]
