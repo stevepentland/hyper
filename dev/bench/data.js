@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1610138199770,
+  "lastUpdate": 1610505196093,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -719,6 +719,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 46158,
             "range": "± 2362",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "markus.westerlind@distilnetworks.com",
+            "name": "Markus Westerlind",
+            "username": "Marwes"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a15f3f7f0f536c74d51636bbc00f6b5ec110472b",
+          "message": "refactor(client): minimize the amount of instantiated code (#2391)\n\n* Halve the amount of conn_task instantiations\r\n* Extract non-generic parts of client::handshake\r\n* Extract the non-generic parts of call_async",
+          "timestamp": "2021-01-12T16:18:22-08:00",
+          "tree_id": "56d1582e4c7f3e995ff4cba0fa9bf34cc857408d",
+          "url": "https://github.com/stevepentland/hyper/commit/a15f3f7f0f536c74d51636bbc00f6b5ec110472b"
+        },
+        "date": 1610505192034,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 45723,
+            "range": "± 1046",
             "unit": "ns/iter"
           }
         ]
