@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1610661507717,
+  "lastUpdate": 1610661518495,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1501,6 +1501,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 53431,
             "range": "± 6803",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "te316e89@gmail.com",
+            "name": "Taiki Endo",
+            "username": "taiki-e"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f0ddb669328163001fd18a4a21109e95047848bf",
+          "message": "refactor(lib): apply unreachable_pub lint (#2400)\n\nCloses #2390",
+          "timestamp": "2021-01-14T09:57:55-08:00",
+          "tree_id": "4bcb4014c9adce39c308cc16bb2ae4cc95515ea4",
+          "url": "https://github.com/stevepentland/hyper/commit/f0ddb669328163001fd18a4a21109e95047848bf"
+        },
+        "date": 1610661513995,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 54070,
+            "range": "± 3660",
             "unit": "ns/iter"
           }
         ]
