@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1610746341414,
+  "lastUpdate": 1610746345598,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -809,6 +809,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 45425,
             "range": "± 5450",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "24809834+aeryz@users.noreply.github.com",
+            "name": "Abdullah Eryuzlu",
+            "username": "aeryz"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "bf8d74ad1cf7d0b33b470b1e61625ebac56f9c4c",
+          "message": "feat(body): add `send_trailers` to Body channel's `Sender` (#2387)\n\nCloses #2260",
+          "timestamp": "2021-01-15T10:14:21-08:00",
+          "tree_id": "98ca623fc9171719aabfeac75bad0285557a25fb",
+          "url": "https://github.com/stevepentland/hyper/commit/bf8d74ad1cf7d0b33b470b1e61625ebac56f9c4c"
+        },
+        "date": 1610746340509,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 64521,
+            "range": "± 12656",
             "unit": "ns/iter"
           }
         ]
