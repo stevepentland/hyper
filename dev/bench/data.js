@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1611110347522,
+  "lastUpdate": 1611110373520,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1801,6 +1801,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 46316,
             "range": "± 3969",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "paolo@paolo565.org",
+            "name": "Paolo Barbolini",
+            "username": "paolobarbolini"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "237b2ce08341266b62a8d1cfa974779c511a0710",
+          "message": "refactor(lib): Remove useless uses of Pin (#2405)",
+          "timestamp": "2021-01-19T14:51:34-08:00",
+          "tree_id": "850a7bc3c25f7d4f85ccb325ecd0e717537eedf0",
+          "url": "https://github.com/stevepentland/hyper/commit/237b2ce08341266b62a8d1cfa974779c511a0710"
+        },
+        "date": 1611110368992,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 53927,
+            "range": "± 4204",
             "unit": "ns/iter"
           }
         ]
