@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1611197247248,
+  "lastUpdate": 1611695976403,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1891,6 +1891,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 66887,
             "range": "± 9697",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "inikulin@cloudflare.com",
+            "name": "Ivan Nikulin",
+            "username": "inikulin"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2c8121f1735aa8efeb0d5e4ef595363c373ba470",
+          "message": "fix(client): HTTP/1 client \"Transfer-Encoding\" repair code would panic (#2410)\n\nCloses #2409",
+          "timestamp": "2021-01-26T10:36:58-08:00",
+          "tree_id": "774a20785cfcebc335095bbd9f4c823305ac5cd4",
+          "url": "https://github.com/stevepentland/hyper/commit/2c8121f1735aa8efeb0d5e4ef595363c373ba470"
+        },
+        "date": 1611695972515,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 47808,
+            "range": "± 1720",
             "unit": "ns/iter"
           }
         ]
