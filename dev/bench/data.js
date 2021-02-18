@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1612914527265,
+  "lastUpdate": 1613684706236,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1169,6 +1169,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 59034,
             "range": "± 9364",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "markus.westerlind@distilnetworks.com",
+            "name": "Markus Westerlind",
+            "username": "Marwes"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f01de8e503c649034a53a8fdf3ad2e107ad9ad2d",
+          "message": "refactor(client): Use async/await more (#2437)\n\n* refactor: Use async/await in client.rs\r\n\r\n* refactor: Simplify client.rs a bit more\r\n\r\n* refactor: Allow !Unpin in Lazy\r\n\r\n* Remove some impl Future\r\n\r\n* Remove some combinator use",
+          "timestamp": "2021-02-18T10:35:43-08:00",
+          "tree_id": "ecce068928942422a611eea6f2e2c7533022f73d",
+          "url": "https://github.com/stevepentland/hyper/commit/f01de8e503c649034a53a8fdf3ad2e107ad9ad2d"
+        },
+        "date": 1613684700858,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 69553,
+            "range": "± 10034",
             "unit": "ns/iter"
           }
         ]
