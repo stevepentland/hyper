@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1614406104908,
+  "lastUpdate": 1614406126263,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -2581,6 +2581,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 58897,
             "range": "± 14359",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "f162ca2f2fd14681e11dd8b9ba8d1469b2b9271b",
+          "message": "docs(ffi): generate FFI documentation (#2447)",
+          "timestamp": "2021-02-26T19:00:37-08:00",
+          "tree_id": "6fb822dc3e7c899c8cfbd23348c87583879f465a",
+          "url": "https://github.com/stevepentland/hyper/commit/f162ca2f2fd14681e11dd8b9ba8d1469b2b9271b"
+        },
+        "date": 1614406121517,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 72887,
+            "range": "± 31467",
             "unit": "ns/iter"
           }
         ]
