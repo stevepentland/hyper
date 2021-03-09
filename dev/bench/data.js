@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1615266488249,
+  "lastUpdate": 1615266494435,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -2701,6 +2701,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 60703,
             "range": "± 7286",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "76654022+0x79756b69@users.noreply.github.com",
+            "name": "0x79756b69",
+            "username": "0x79756b69"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "34085afef66b453dfee1c561e6683546bf4600c8",
+          "message": "docs(examples): use hyper v0.14 and full feature (#2451)",
+          "timestamp": "2021-03-08T14:19:24-08:00",
+          "tree_id": "67d588d032acb77655c972fa0622805749a364a2",
+          "url": "https://github.com/stevepentland/hyper/commit/34085afef66b453dfee1c561e6683546bf4600c8"
+        },
+        "date": 1615266489670,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 62221,
+            "range": "± 7040",
             "unit": "ns/iter"
           }
         ]
