@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1615266673280,
+  "lastUpdate": 1615441729297,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1379,6 +1379,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 48860,
             "range": "± 5689",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "346512016@qq.com",
+            "name": "kolapapa",
+            "username": "kolapapa"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "297a068454115e8d5426f9051398d851f69235bf",
+          "message": "docs(examples): upgrade tokio version (#2456)",
+          "timestamp": "2021-03-10T10:00:39-08:00",
+          "tree_id": "98004bc3096176316ed6534e6e96eda3d08cb825",
+          "url": "https://github.com/stevepentland/hyper/commit/297a068454115e8d5426f9051398d851f69235bf"
+        },
+        "date": 1615441724783,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 52399,
+            "range": "± 8731",
             "unit": "ns/iter"
           }
         ]
