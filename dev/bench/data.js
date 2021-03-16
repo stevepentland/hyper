@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1615867592079,
+  "lastUpdate": 1615867613149,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -2821,6 +2821,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 75938,
             "range": "± 27673",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "mail@dbrgn.ch",
+            "name": "Danilo Bargen",
+            "username": "dbrgn"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "eb0e7186963bbe4fa1ad4478ac493f75ddc92ae5",
+          "message": "docs(body): add links to to_bytes and aggregate (#2464)\n\nSince these two functions are not methods on the `Body`, they aren't\r\nvery discoverable. So a note in the docs would definitely be helpful.",
+          "timestamp": "2021-03-15T15:40:28-07:00",
+          "tree_id": "14b6039d4a111f52351c76ea2f9cdbb19cf616c6",
+          "url": "https://github.com/stevepentland/hyper/commit/eb0e7186963bbe4fa1ad4478ac493f75ddc92ae5"
+        },
+        "date": 1615867609157,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 61293,
+            "range": "± 11961",
             "unit": "ns/iter"
           }
         ]
