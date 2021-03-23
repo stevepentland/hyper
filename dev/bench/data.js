@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1616479280850,
+  "lastUpdate": 1616479285189,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1559,6 +1559,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 49971,
             "range": "± 2036",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "thomasdezeeuw@gmail.com",
+            "name": "Thomas de Zeeuw",
+            "username": "Thomasdezeeuw"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "41f99578a53845e5e0bb999c101bef8307e1ce5f",
+          "message": "refactor(dependencies): update to socket2 v0.4.0 (#2472)",
+          "timestamp": "2021-03-22T15:16:31-07:00",
+          "tree_id": "bd982e385979d9a9b4441522a8e54b095729bb2e",
+          "url": "https://github.com/stevepentland/hyper/commit/41f99578a53845e5e0bb999c101bef8307e1ce5f"
+        },
+        "date": 1616479276005,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 74360,
+            "range": "± 6623",
             "unit": "ns/iter"
           }
         ]
