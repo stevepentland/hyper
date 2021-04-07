@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1616822252483,
+  "lastUpdate": 1617756393379,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1679,6 +1679,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 44668,
             "range": "± 836",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "kevin@burke.dev",
+            "name": "Kevin Burke",
+            "username": "kevinburke"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "aa4a2eaa44ce4eb8a0049e4363f59f323ed56854",
+          "message": "chore(LICENSE): update license year (#2491)",
+          "timestamp": "2021-04-06T14:49:37-07:00",
+          "tree_id": "b6f6db86e5b8ff78bec3e88897081599827b72bd",
+          "url": "https://github.com/stevepentland/hyper/commit/aa4a2eaa44ce4eb8a0049e4363f59f323ed56854"
+        },
+        "date": 1617756389198,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 51086,
+            "range": "± 1684",
             "unit": "ns/iter"
           }
         ]
