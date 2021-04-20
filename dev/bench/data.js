@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1617864551961,
+  "lastUpdate": 1618962467267,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -3451,6 +3451,36 @@ window.BENCHMARK_DATA = {
             "name": "hello_world_16",
             "value": 58057,
             "range": "± 9982",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "123095+nox@users.noreply.github.com",
+            "name": "Anthony Ramine",
+            "username": "nox"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "11345394d968d4817e1a0ee2550228ac0ae7ce74",
+          "message": "feat(client): add option to allow misplaced spaces in HTTP/1 responses (#2506)",
+          "timestamp": "2021-04-20T14:17:48-07:00",
+          "tree_id": "3b29f8a6165231bdbe3449acf1c70aeb16bc9153",
+          "url": "https://github.com/stevepentland/hyper/commit/11345394d968d4817e1a0ee2550228ac0ae7ce74"
+        },
+        "date": 1618962463394,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "hello_world_16",
+            "value": 57952,
+            "range": "± 10708",
             "unit": "ns/iter"
           }
         ]
