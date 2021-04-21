@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1619027289451,
+  "lastUpdate": 1619027441616,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -11577,6 +11577,144 @@ window.BENCHMARK_DATA = {
             "name": "http2_req_100kb",
             "value": 181954,
             "range": "± 37862",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "123095+nox@users.noreply.github.com",
+            "name": "Anthony Ramine",
+            "username": "nox"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "dbea7716f157896bf7d2d417be7b4e382e7dc34f",
+          "message": "feat(http1): add options to preserve header casing (#2480)\n\nDecouple preserving header case from FFI:\r\n\r\nThe feature is now supported in both the server and the client\r\nand can be combined with the title case feature, for headers\r\nwhich don't have entries in the header case map.\r\n\r\nCloses #2313",
+          "timestamp": "2021-04-21T09:50:35-07:00",
+          "tree_id": "7af54f6d37e20837e6e078489a52662a4530ee53",
+          "url": "https://github.com/stevepentland/hyper/commit/dbea7716f157896bf7d2d417be7b4e382e7dc34f"
+        },
+        "date": 1619027436810,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http1_body_both_100kb",
+            "value": 118415,
+            "range": "± 7536",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_body_both_10mb",
+            "value": 6378413,
+            "range": "± 952650",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_get",
+            "value": 42143,
+            "range": "± 2147",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_empty",
+            "value": 267296,
+            "range": "± 23085",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_req_10kb_100_chunks",
+            "value": 52004794,
+            "range": "± 826467",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_req_10mb",
+            "value": 48524671,
+            "range": "± 3735520",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_res_10mb",
+            "value": 50781192,
+            "range": "± 2877919",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_parallel_x10_res_1mb",
+            "value": 3367052,
+            "range": "± 450501",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http1_post",
+            "value": 48067,
+            "range": "± 4548",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_get",
+            "value": 80426,
+            "range": "± 4793",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_empty",
+            "value": 210413,
+            "range": "± 23584",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks",
+            "value": 11979728,
+            "range": "± 9002758",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks_adaptive_window",
+            "value": 11985018,
+            "range": "± 8976271",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10kb_100_chunks_max_window",
+            "value": 11708892,
+            "range": "± 9032525",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_req_10mb",
+            "value": 63114632,
+            "range": "± 4999243",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_res_10mb",
+            "value": 73644011,
+            "range": "± 14168903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_parallel_x10_res_1mb",
+            "value": 6408121,
+            "range": "± 995381",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_post",
+            "value": 93172,
+            "range": "± 9892",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "http2_req_100kb",
+            "value": 166454,
+            "range": "± 15319",
             "unit": "ns/iter"
           }
         ]
