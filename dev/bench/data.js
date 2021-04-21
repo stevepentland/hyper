@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1619027441616,
+  "lastUpdate": 1619048829986,
   "repoUrl": "https://github.com/stevepentland/hyper",
   "entries": {
     "connect": [
@@ -1799,6 +1799,36 @@ window.BENCHMARK_DATA = {
             "name": "http_connector",
             "value": 51536,
             "range": "± 6378",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "committer": {
+            "email": "sean@seanmonstar.com",
+            "name": "Sean McArthur",
+            "username": "seanmonstar"
+          },
+          "distinct": true,
+          "id": "7f69d8f94ccf258190f40585cd668e986b0829e4",
+          "message": "v0.14.6",
+          "timestamp": "2021-04-21T16:19:31-07:00",
+          "tree_id": "415b1e099ad45a3af99415ebb44197e9ef4dc0f6",
+          "url": "https://github.com/stevepentland/hyper/commit/7f69d8f94ccf258190f40585cd668e986b0829e4"
+        },
+        "date": 1619048826315,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "http_connector",
+            "value": 44563,
+            "range": "± 1733",
             "unit": "ns/iter"
           }
         ]
