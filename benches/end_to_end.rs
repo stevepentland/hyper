@@ -2,31 +2,37 @@
 #![deny(warnings)]
 
 extern crate test;
+mod support;
 
+// TODO: Reimplement parallel for HTTP/1
+
+use std::convert::Infallible;
 use std::net::SocketAddr;
 
 use futures_util::future::join_all;
 
-use hyper::client::HttpConnector;
-use hyper::{body::HttpBody as _, Body, Method, Request, Response, Server};
+use http_body_util::BodyExt;
+use hyper::{Method, Request, Response};
+
+type BoxedBody = http_body_util::combinators::BoxBody<bytes::Bytes, Infallible>;
 
 // HTTP1
 
 #[bench]
-fn http1_get(b: &mut test::Bencher) {
+fn http1_consecutive_x1_empty(b: &mut test::Bencher) {
     opts().bench(b)
 }
 
 #[bench]
-fn http1_post(b: &mut test::Bencher) {
+fn http1_consecutive_x1_req_10b(b: &mut test::Bencher) {
     opts()
         .method(Method::POST)
-        .request_body(b"foo bar baz quux")
+        .request_body(&[b's'; 10])
         .bench(b)
 }
 
 #[bench]
-fn http1_body_both_100kb(b: &mut test::Bencher) {
+fn http1_consecutive_x1_both_100kb(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 100];
     opts()
         .method(Method::POST)
@@ -36,7 +42,7 @@ fn http1_body_both_100kb(b: &mut test::Bencher) {
 }
 
 #[bench]
-fn http1_body_both_10mb(b: &mut test::Bencher) {
+fn http1_consecutive_x1_both_10mb(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 1024 * 10];
     opts()
         .method(Method::POST)
@@ -46,11 +52,13 @@ fn http1_body_both_10mb(b: &mut test::Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn http1_parallel_x10_empty(b: &mut test::Bencher) {
     opts().parallel(10).bench(b)
 }
 
 #[bench]
+#[ignore]
 fn http1_parallel_x10_req_10mb(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 1024 * 10];
     opts()
@@ -61,6 +69,7 @@ fn http1_parallel_x10_req_10mb(b: &mut test::Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn http1_parallel_x10_req_10kb_100_chunks(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 10];
     opts()
@@ -71,12 +80,14 @@ fn http1_parallel_x10_req_10kb_100_chunks(b: &mut test::Bencher) {
 }
 
 #[bench]
+#[ignore]
 fn http1_parallel_x10_res_1mb(b: &mut test::Bencher) {
-    let body = &[b'x'; 1024 * 1024 * 1];
+    let body = &[b'x'; 1024 * 1024];
     opts().parallel(10).response_body(body).bench(b)
 }
 
 #[bench]
+#[ignore]
 fn http1_parallel_x10_res_10mb(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 1024 * 10];
     opts().parallel(10).response_body(body).bench(b)
@@ -84,24 +95,24 @@ fn http1_parallel_x10_res_10mb(b: &mut test::Bencher) {
 
 // HTTP2
 
-const HTTP2_MAX_WINDOW: u32 = std::u32::MAX >> 1;
+const HTTP2_MAX_WINDOW: u32 = u32::MAX >> 1;
 
 #[bench]
-fn http2_get(b: &mut test::Bencher) {
+fn http2_consecutive_x1_empty(b: &mut test::Bencher) {
     opts().http2().bench(b)
 }
 
 #[bench]
-fn http2_post(b: &mut test::Bencher) {
+fn http2_consecutive_x1_req_10b(b: &mut test::Bencher) {
     opts()
         .http2()
         .method(Method::POST)
-        .request_body(b"foo bar baz quux")
+        .request_body(&[b's'; 10])
         .bench(b)
 }
 
 #[bench]
-fn http2_req_100kb(b: &mut test::Bencher) {
+fn http2_consecutive_x1_req_100kb(b: &mut test::Bencher) {
     let body = &[b'x'; 1024 * 100];
     opts()
         .http2()
@@ -166,7 +177,7 @@ fn http2_parallel_x10_req_10kb_100_chunks_max_window(b: &mut test::Bencher) {
 
 #[bench]
 fn http2_parallel_x10_res_1mb(b: &mut test::Bencher) {
-    let body = &[b'x'; 1024 * 1024 * 1];
+    let body = &[b'x'; 1024 * 1024];
     opts()
         .http2()
         .parallel(10)
@@ -190,6 +201,7 @@ fn http2_parallel_x10_res_10mb(b: &mut test::Bencher) {
 
 // ==== Benchmark Options =====
 
+#[derive(Clone)]
 struct Opts {
     http2: bool,
     http2_stream_window: Option<u32>,
@@ -292,33 +304,62 @@ impl Opts {
 
         let addr = spawn_server(&rt, &self);
 
-        let connector = HttpConnector::new();
-        let client = hyper::Client::builder()
-            .http2_only(self.http2)
-            .http2_initial_stream_window_size(self.http2_stream_window)
-            .http2_initial_connection_window_size(self.http2_conn_window)
-            .http2_adaptive_window(self.http2_adaptive_window)
-            .build::<_, Body>(connector);
+        enum Client {
+            Http1(hyper::client::conn::http1::SendRequest<BoxedBody>),
+            Http2(hyper::client::conn::http2::SendRequest<BoxedBody>),
+        }
+
+        let mut client = rt.block_on(async {
+            if self.http2 {
+                let tcp = tokio::net::TcpStream::connect(&addr).await.unwrap();
+                let io = support::TokioIo::new(tcp);
+                let (tx, conn) = hyper::client::conn::http2::Builder::new(support::TokioExecutor)
+                    .initial_stream_window_size(self.http2_stream_window)
+                    .initial_connection_window_size(self.http2_conn_window)
+                    .adaptive_window(self.http2_adaptive_window)
+                    .handshake(io)
+                    .await
+                    .unwrap();
+                tokio::spawn(conn);
+                Client::Http2(tx)
+            } else if self.parallel_cnt > 1 {
+                todo!("http/1 parallel >1");
+            } else {
+                let tcp = tokio::net::TcpStream::connect(&addr).await.unwrap();
+                let io = support::TokioIo::new(tcp);
+                let (tx, conn) = hyper::client::conn::http1::Builder::new()
+                    .handshake(io)
+                    .await
+                    .unwrap();
+                tokio::spawn(conn);
+                Client::Http1(tx)
+            }
+        });
 
         let url: hyper::Uri = format!("http://{}/hello", addr).parse().unwrap();
 
         let make_request = || {
             let chunk_cnt = self.request_chunks;
             let body = if chunk_cnt > 0 {
-                let (mut tx, body) = Body::channel();
+                let (mut tx, rx) = futures_channel::mpsc::channel(0);
+
                 let chunk = self
                     .request_body
                     .expect("request_chunks means request_body");
                 exec.spawn(async move {
+                    use futures_util::SinkExt;
+                    use hyper::body::Frame;
                     for _ in 0..chunk_cnt {
-                        tx.send_data(chunk.into()).await.expect("send_data");
+                        tx.send(Ok(Frame::data(bytes::Bytes::from(chunk))))
+                            .await
+                            .expect("send_data");
                     }
                 });
-                body
+                http_body_util::StreamBody::new(rx).boxed()
+            } else if let Some(chunk) = self.request_body {
+                http_body_util::Full::new(bytes::Bytes::from(chunk)).boxed()
             } else {
-                self.request_body
-                    .map(Body::from)
-                    .unwrap_or_else(Body::empty)
+                http_body_util::Empty::new().boxed()
             };
             let mut req = Request::new(body);
             *req.method_mut() = self.request_method.clone();
@@ -326,12 +367,15 @@ impl Opts {
             req
         };
 
-        let send_request = |req: Request<Body>| {
-            let fut = client.request(req);
+        let mut send_request = |req| {
+            let fut = match &mut client {
+                Client::Http1(tx) => futures_util::future::Either::Left(tx.send_request(req)),
+                Client::Http2(tx) => futures_util::future::Either::Right(tx.send_request(req)),
+            };
             async {
                 let res = fut.await.expect("client wait");
                 let mut body = res.into_body();
-                while let Some(_chunk) = body.data().await {}
+                while let Some(_chunk) = body.frame().await {}
             }
         };
 
@@ -354,28 +398,49 @@ impl Opts {
 }
 
 fn spawn_server(rt: &tokio::runtime::Runtime, opts: &Opts) -> SocketAddr {
-    use hyper::service::{make_service_fn, service_fn};
-    let addr = "127.0.0.1:0".parse().unwrap();
+    use http_body_util::Full;
+    use hyper::service::service_fn;
+    use tokio::net::TcpListener;
+    let addr = "127.0.0.1:0".parse::<std::net::SocketAddr>().unwrap();
 
+    let listener = rt.block_on(async { TcpListener::bind(&addr).await.unwrap() });
+
+    let addr = listener.local_addr().unwrap();
     let body = opts.response_body;
-    let srv = rt.block_on(async move {
-        Server::bind(&addr)
-            .http2_only(opts.http2)
-            .http2_initial_stream_window_size(opts.http2_stream_window)
-            .http2_initial_connection_window_size(opts.http2_conn_window)
-            .http2_adaptive_window(opts.http2_adaptive_window)
-            .serve(make_service_fn(move |_| async move {
-                Ok::<_, hyper::Error>(service_fn(move |req: Request<Body>| async move {
-                    let mut req_body = req.into_body();
-                    while let Some(_chunk) = req_body.data().await {}
-                    Ok::<_, hyper::Error>(Response::new(Body::from(body)))
-                }))
-            }))
-    });
-    let addr = srv.local_addr();
-    rt.spawn(async {
-        if let Err(err) = srv.await {
-            panic!("server error: {}", err);
+    let opts = opts.clone();
+    rt.spawn(async move {
+        let _ = &opts;
+        while let Ok((sock, _)) = listener.accept().await {
+            let io = support::TokioIo::new(sock);
+            if opts.http2 {
+                tokio::spawn(
+                    hyper::server::conn::http2::Builder::new(support::TokioExecutor)
+                        .initial_stream_window_size(opts.http2_stream_window)
+                        .initial_connection_window_size(opts.http2_conn_window)
+                        .adaptive_window(opts.http2_adaptive_window)
+                        .serve_connection(
+                            io,
+                            service_fn(move |req: Request<hyper::body::Incoming>| async move {
+                                let mut req_body = req.into_body();
+                                while let Some(_chunk) = req_body.frame().await {}
+                                Ok::<_, std::convert::Infallible>(Response::new(
+                                    Full::<bytes::Bytes>::from(body),
+                                ))
+                            }),
+                        ),
+                );
+            } else {
+                tokio::spawn(hyper::server::conn::http1::Builder::new().serve_connection(
+                    io,
+                    service_fn(move |req: Request<hyper::body::Incoming>| async move {
+                        let mut req_body = req.into_body();
+                        while let Some(_chunk) = req_body.frame().await {}
+                        Ok::<_, std::convert::Infallible>(Response::new(
+                            Full::<bytes::Bytes>::from(body),
+                        ))
+                    }),
+                ));
+            }
         }
     });
     addr

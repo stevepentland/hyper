@@ -1,52 +1,57 @@
 #![deny(warnings)]
 
-use std::convert::Infallible;
 use std::net::SocketAddr;
 
-use futures_util::future::try_join;
-
-use hyper::service::{make_service_fn, service_fn};
+use bytes::Bytes;
+use http_body_util::{combinators::BoxBody, BodyExt, Empty, Full};
+use hyper::service::service_fn;
 use hyper::upgrade::Upgraded;
-use hyper::{Body, Client, Method, Request, Response, Server};
+use hyper::{Method, Request, Response};
 
-use tokio::net::TcpStream;
+use tokio::net::{TcpListener, TcpStream};
 
-type HttpClient = Client<hyper::client::HttpConnector>;
+#[path = "../benches/support/mod.rs"]
+mod support;
+use support::TokioIo;
+
+type ClientBuilder = hyper::client::conn::http1::Builder;
+type ServerBuilder = hyper::server::conn::http1::Builder;
 
 // To try this example:
 // 1. cargo run --example http_proxy
 // 2. config http_proxy in command line
 //    $ export http_proxy=http://127.0.0.1:8100
 //    $ export https_proxy=http://127.0.0.1:8100
-// 3. send requests (don't use a domain name)
-//    $ curl -i https://8.8.8.8
+// 3. send requests
+//    $ curl -i https://www.some_domain.com/
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::from(([127, 0, 0, 1], 8100));
 
-    let client = Client::builder()
-        .http1_title_case_headers(true)
-        .http1_preserve_header_case(true)
-        .build_http();
-
-    let make_service = make_service_fn(move |_| {
-        let client = client.clone();
-        async move { Ok::<_, Infallible>(service_fn(move |req| proxy(client.clone(), req))) }
-    });
-
-    let server = Server::bind(&addr)
-        .http1_preserve_header_case(true)
-        .http1_title_case_headers(true)
-        .serve(make_service);
-
+    let listener = TcpListener::bind(addr).await?;
     println!("Listening on http://{}", addr);
 
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
+    loop {
+        let (stream, _) = listener.accept().await?;
+        let io = TokioIo::new(stream);
+
+        tokio::task::spawn(async move {
+            if let Err(err) = ServerBuilder::new()
+                .preserve_header_case(true)
+                .title_case_headers(true)
+                .serve_connection(io, service_fn(proxy))
+                .with_upgrades()
+                .await
+            {
+                println!("Failed to serve connection: {:?}", err);
+            }
+        });
     }
 }
 
-async fn proxy(client: HttpClient, req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+async fn proxy(
+    req: Request<hyper::body::Incoming>,
+) -> Result<Response<BoxBody<Bytes, hyper::Error>>, hyper::Error> {
     println!("req: {:?}", req);
 
     if Method::CONNECT == req.method() {
@@ -75,51 +80,69 @@ async fn proxy(client: HttpClient, req: Request<Body>) -> Result<Response<Body>,
                 }
             });
 
-            Ok(Response::new(Body::empty()))
+            Ok(Response::new(empty()))
         } else {
             eprintln!("CONNECT host is not socket addr: {:?}", req.uri());
-            let mut resp = Response::new(Body::from("CONNECT must be to a socket address"));
+            let mut resp = Response::new(full("CONNECT must be to a socket address"));
             *resp.status_mut() = http::StatusCode::BAD_REQUEST;
 
             Ok(resp)
         }
     } else {
-        client.request(req).await
+        let host = req.uri().host().expect("uri has no host");
+        let port = req.uri().port_u16().unwrap_or(80);
+
+        let stream = TcpStream::connect((host, port)).await.unwrap();
+        let io = TokioIo::new(stream);
+
+        let (mut sender, conn) = ClientBuilder::new()
+            .preserve_header_case(true)
+            .title_case_headers(true)
+            .handshake(io)
+            .await?;
+        tokio::task::spawn(async move {
+            if let Err(err) = conn.await {
+                println!("Connection failed: {:?}", err);
+            }
+        });
+
+        let resp = sender.send_request(req).await?;
+        Ok(resp.map(|b| b.boxed()))
     }
 }
 
-fn host_addr(uri: &http::Uri) -> Option<SocketAddr> {
-    uri.authority().and_then(|auth| auth.as_str().parse().ok())
+fn host_addr(uri: &http::Uri) -> Option<String> {
+    uri.authority().map(|auth| auth.to_string())
+}
+
+fn empty() -> BoxBody<Bytes, hyper::Error> {
+    Empty::<Bytes>::new()
+        .map_err(|never| match never {})
+        .boxed()
+}
+
+fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, hyper::Error> {
+    Full::new(chunk.into())
+        .map_err(|never| match never {})
+        .boxed()
 }
 
 // Create a TCP connection to host:port, build a tunnel between the connection and
 // the upgraded connection
-async fn tunnel(upgraded: Upgraded, addr: SocketAddr) -> std::io::Result<()> {
+async fn tunnel(upgraded: Upgraded, addr: String) -> std::io::Result<()> {
     // Connect to remote server
     let mut server = TcpStream::connect(addr).await?;
+    let mut upgraded = TokioIo::new(upgraded);
 
     // Proxying data
-    let amounts = {
-        let (mut server_rd, mut server_wr) = server.split();
-        let (mut client_rd, mut client_wr) = tokio::io::split(upgraded);
-
-        let client_to_server = tokio::io::copy(&mut client_rd, &mut server_wr);
-        let server_to_client = tokio::io::copy(&mut server_rd, &mut client_wr);
-
-        try_join(client_to_server, server_to_client).await
-    };
+    let (from_client, from_server) =
+        tokio::io::copy_bidirectional(&mut upgraded, &mut server).await?;
 
     // Print message when done
-    match amounts {
-        Ok((from_client, from_server)) => {
-            println!(
-                "client wrote {} bytes and received {} bytes",
-                from_client, from_server
-            );
-        }
-        Err(e) => {
-            println!("tunnel error: {}", e);
-        }
-    };
+    println!(
+        "client wrote {} bytes and received {} bytes",
+        from_client, from_server
+    );
+
     Ok(())
 }

@@ -1,23 +1,34 @@
 // #![deny(warnings)]  // FIXME: https://github.com/rust-lang/rust/issues/62411
 #![warn(rust_2018_idioms)]
 
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use bytes::Bytes;
+use http_body_util::{combinators::BoxBody, BodyExt, Empty, Full};
+use hyper::server::conn::http1;
+use hyper::service::service_fn;
+use hyper::{Method, Request, Response, StatusCode};
+use tokio::net::TcpListener;
 
 use std::collections::HashMap;
-use url::form_urlencoded;
+use std::convert::Infallible;
+use std::net::SocketAddr;
+
+#[path = "../benches/support/mod.rs"]
+mod support;
+use support::TokioIo;
 
 static INDEX: &[u8] = b"<html><body><form action=\"post\" method=\"post\">Name: <input type=\"text\" name=\"name\"><br>Number: <input type=\"text\" name=\"number\"><br><input type=\"submit\"></body></html>";
 static MISSING: &[u8] = b"Missing field";
 static NOTNUMERIC: &[u8] = b"Number field is not numeric";
 
 // Using service_fn, we can turn this function into a `Service`.
-async fn param_example(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+async fn param_example(
+    req: Request<hyper::body::Incoming>,
+) -> Result<Response<BoxBody<Bytes, Infallible>>, hyper::Error> {
     match (req.method(), req.uri().path()) {
-        (&Method::GET, "/") | (&Method::GET, "/post") => Ok(Response::new(INDEX.into())),
+        (&Method::GET, "/") | (&Method::GET, "/post") => Ok(Response::new(full(INDEX))),
         (&Method::POST, "/post") => {
             // Concatenate the body...
-            let b = hyper::body::to_bytes(req).await?;
+            let b = req.collect().await?.to_bytes();
             // Parse the request body. form_urlencoded::parse
             // always succeeds, but in general parsing may
             // fail (for example, an invalid post of json), so
@@ -40,8 +51,8 @@ async fn param_example(req: Request<Body>) -> Result<Response<Body>, hyper::Erro
             } else {
                 return Ok(Response::builder()
                     .status(StatusCode::UNPROCESSABLE_ENTITY)
-                    .body(MISSING.into())
-                    .unwrap());
+                    .body(full(MISSING))
+                    .expect("constant status won't error"));
             };
             let number = if let Some(n) = params.get("number") {
                 if let Ok(v) = n.parse::<f64>() {
@@ -49,14 +60,14 @@ async fn param_example(req: Request<Body>) -> Result<Response<Body>, hyper::Erro
                 } else {
                     return Ok(Response::builder()
                         .status(StatusCode::UNPROCESSABLE_ENTITY)
-                        .body(NOTNUMERIC.into())
-                        .unwrap());
+                        .body(full(NOTNUMERIC))
+                        .expect("constant status won't error"));
                 }
             } else {
                 return Ok(Response::builder()
                     .status(StatusCode::UNPROCESSABLE_ENTITY)
-                    .body(MISSING.into())
-                    .unwrap());
+                    .body(full(MISSING))
+                    .expect("constant status won't error"));
             };
 
             // Render the response. This will often involve
@@ -66,28 +77,65 @@ async fn param_example(req: Request<Body>) -> Result<Response<Body>, hyper::Erro
             // responses such as InternalServiceError may be
             // needed here, too.
             let body = format!("Hello {}, your number is {}", name, number);
-            Ok(Response::new(body.into()))
+            Ok(Response::new(full(body)))
+        }
+        (&Method::GET, "/get") => {
+            let query = if let Some(q) = req.uri().query() {
+                q
+            } else {
+                return Ok(Response::builder()
+                    .status(StatusCode::UNPROCESSABLE_ENTITY)
+                    .body(full(MISSING))
+                    .expect("constant status won't error"));
+            };
+            let params = form_urlencoded::parse(query.as_bytes())
+                .into_owned()
+                .collect::<HashMap<String, String>>();
+            let page = if let Some(p) = params.get("page") {
+                p
+            } else {
+                return Ok(Response::builder()
+                    .status(StatusCode::UNPROCESSABLE_ENTITY)
+                    .body(full(MISSING))
+                    .expect("constant status won't error"));
+            };
+            let body = format!("You requested {}", page);
+            Ok(Response::new(full(body)))
         }
         _ => Ok(Response::builder()
             .status(StatusCode::NOT_FOUND)
-            .body(Body::empty())
-            .unwrap()),
+            .body(empty())
+            .expect("constant status won't error")),
     }
+}
+
+fn empty() -> BoxBody<Bytes, Infallible> {
+    Empty::<Bytes>::new().boxed()
+}
+
+fn full<T: Into<Bytes>>(chunk: T) -> BoxBody<Bytes, Infallible> {
+    Full::new(chunk.into()).boxed()
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     pretty_env_logger::init();
 
-    let addr = ([127, 0, 0, 1], 1337).into();
+    let addr: SocketAddr = ([127, 0, 0, 1], 1337).into();
 
-    let server = Server::bind(&addr).serve(make_service_fn(|_| async {
-        Ok::<_, hyper::Error>(service_fn(param_example))
-    }));
-
+    let listener = TcpListener::bind(addr).await?;
     println!("Listening on http://{}", addr);
+    loop {
+        let (stream, _) = listener.accept().await?;
+        let io = TokioIo::new(stream);
 
-    server.await?;
-
-    Ok(())
+        tokio::task::spawn(async move {
+            if let Err(err) = http1::Builder::new()
+                .serve_connection(io, service_fn(param_example))
+                .await
+            {
+                println!("Error serving connection: {:?}", err);
+            }
+        });
+    }
 }

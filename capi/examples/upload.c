@@ -24,44 +24,42 @@ static size_t read_cb(void *userdata, hyper_context *ctx, uint8_t *buf, size_t b
     struct conn_data *conn = (struct conn_data *)userdata;
     ssize_t ret = read(conn->fd, buf, buf_len);
 
-    if (ret < 0) {
-        int err = errno;
-        if (err == EAGAIN) {
-            // would block, register interest
-            if (conn->read_waker != NULL) {
-                hyper_waker_free(conn->read_waker);
-            }
-            conn->read_waker = hyper_context_waker(ctx);
-            return HYPER_IO_PENDING;
-        } else {
-            // kaboom
-            return HYPER_IO_ERROR;
-        }
-    } else {
+    if (ret >= 0) {
         return ret;
     }
+
+    if (errno != EAGAIN) {
+        // kaboom
+        return HYPER_IO_ERROR;
+    }
+
+    // would block, register interest
+    if (conn->read_waker != NULL) {
+        hyper_waker_free(conn->read_waker);
+    }
+    conn->read_waker = hyper_context_waker(ctx);
+    return HYPER_IO_PENDING;
 }
 
 static size_t write_cb(void *userdata, hyper_context *ctx, const uint8_t *buf, size_t buf_len) {
     struct conn_data *conn = (struct conn_data *)userdata;
     ssize_t ret = write(conn->fd, buf, buf_len);
 
-    if (ret < 0) {
-        int err = errno;
-        if (err == EAGAIN) {
-            // would block, register interest
-            if (conn->write_waker != NULL) {
-                hyper_waker_free(conn->write_waker);
-            }
-            conn->write_waker = hyper_context_waker(ctx);
-            return HYPER_IO_PENDING;
-        } else {
-            // kaboom
-            return HYPER_IO_ERROR;
-        }
-    } else {
+    if (ret >= 0) {
         return ret;
     }
+
+    if (errno != EAGAIN) {
+        // kaboom
+        return HYPER_IO_ERROR;
+    }
+
+    // would block, register interest
+    if (conn->write_waker != NULL) {
+        hyper_waker_free(conn->write_waker);
+    }
+    conn->write_waker = hyper_context_waker(ctx);
+    return HYPER_IO_PENDING;
 }
 
 static void free_conn_data(struct conn_data *conn) {
@@ -98,9 +96,9 @@ static int connect_to(const char *host, const char *port) {
 
         if (connect(sfd, rp->ai_addr, rp->ai_addrlen) != -1) {
             break;
-        } else {
-            close(sfd);
         }
+
+        close(sfd);
     }
 
     freeaddrinfo(result);
@@ -126,17 +124,20 @@ static int poll_req_upload(void *userdata,
     struct upload_body* upload = userdata;
 
     ssize_t res = read(upload->fd, upload->buf, upload->len);
-    if (res < 0) {
-        printf("error reading upload file: %d", errno);
-        return HYPER_POLL_ERROR;
-    } else if (res == 0) {
-        // All done!
-        *chunk = NULL;
-        return HYPER_POLL_READY;
-    } else {
+    if (res > 0) {
         *chunk = hyper_buf_copy(upload->buf, res);
         return HYPER_POLL_READY;
     }
+
+    if (res == 0) {
+        // All done!
+        *chunk = NULL;
+        return HYPER_POLL_READY;
+    }
+
+    // Oh no!
+    printf("error reading upload file: %d", errno);
+    return HYPER_POLL_ERROR;
 }
 
 static int print_each_header(void *userdata,
@@ -146,6 +147,12 @@ static int print_each_header(void *userdata,
                                          size_t value_len) {
     printf("%.*s: %.*s\n", (int) name_len, name, (int) value_len, value);
     return HYPER_ITER_CONTINUE;
+}
+
+static void print_informational(void *userdata, hyper_response *resp) {
+    uint16_t http_status = hyper_response_status(resp);
+
+    printf("\nInformational (1xx): %d\n", http_status);
 }
 
 typedef enum {
@@ -172,7 +179,7 @@ int main(int argc, char *argv[]) {
     upload.fd = open(file, O_RDONLY);
 
     if (upload.fd < 0) {
-        printf("error opening file to upload: %d", errno);
+        printf("error opening file to upload: %s\n", strerror(errno));
         return 1;
     }
     printf("connecting to port %s on %s...\n", port, host);
@@ -208,7 +215,7 @@ int main(int argc, char *argv[]) {
     hyper_io_set_read(io, read_cb);
     hyper_io_set_write(io, write_cb);
 
-    printf("http handshake ...\n");
+    printf("http handshake (hyper v%s) ...\n", hyper_version());
 
     // We need an executor generally to poll futures
     const hyper_executor *exec = hyper_executor_new();
@@ -262,7 +269,14 @@ int main(int argc, char *argv[]) {
                 }
 
                 hyper_headers *req_headers = hyper_request_headers(req);
-                hyper_headers_set(req_headers,  STR_ARG("host"), STR_ARG(host));
+                hyper_headers_set(req_headers, STR_ARG("host"), STR_ARG(host));
+                hyper_headers_set(req_headers, STR_ARG("expect"), STR_ARG("100-continue"));
+
+                // NOTE: We aren't handling *waiting* for the 100 Continue,
+                // the body is sent immediately. This will just print if any
+                // informational headers are received.
+                printf("    with expect-continue ...\n");
+                hyper_request_on_informational(req, print_informational, NULL);
 
                 // Prepare the req body
                 hyper_body *body = hyper_body_new();
@@ -329,20 +343,20 @@ int main(int argc, char *argv[]) {
                     hyper_executor_push(exec, body_data);
 
                     break;
-                } else {
-                    assert(task_type == HYPER_TASK_EMPTY);
-                    hyper_task_free(task);
-                    hyper_body_free(resp_body);
-
-                    printf("\n -- Done! -- \n");
-
-                    // Cleaning up before exiting
-                    hyper_executor_free(exec);
-                    free_conn_data(conn);
-                    free(upload.buf);
-
-                    return 0;
                 }
+
+                assert(task_type == HYPER_TASK_EMPTY);
+                hyper_task_free(task);
+                hyper_body_free(resp_body);
+
+                printf("\n -- Done! -- \n");
+
+                // Cleaning up before exiting
+                hyper_executor_free(exec);
+                free_conn_data(conn);
+                free(upload.buf);
+
+                return 0;
             case EXAMPLE_NOT_SET:
                 // A background task for hyper completed...
                 hyper_task_free(task);
@@ -368,17 +382,17 @@ int main(int argc, char *argv[]) {
         if (sel_ret < 0) {
             printf("select() error\n");
             return 1;
-        } else {
-            if (FD_ISSET(conn->fd, &fds_read)) {
-                hyper_waker_wake(conn->read_waker);
-                conn->read_waker = NULL;
-            }
-            if (FD_ISSET(conn->fd, &fds_write)) {
-                hyper_waker_wake(conn->write_waker);
-                conn->write_waker = NULL;
-            }
         }
 
+        if (FD_ISSET(conn->fd, &fds_read)) {
+            hyper_waker_wake(conn->read_waker);
+            conn->read_waker = NULL;
+        }
+
+        if (FD_ISSET(conn->fd, &fds_write)) {
+            hyper_waker_wake(conn->write_waker);
+            conn->write_waker = NULL;
+        }
     }
 
 

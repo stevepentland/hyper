@@ -1,85 +1,41 @@
 # Contributing to Hyper
 
-You want to contribute? You're awesome! Don't know where to start? Check the [list of easy issues](https://github.com/hyperium/hyper/issues?q=is%3Aopen+is%3Aissue+label%3AE-easy).
+You want to contribute? You're awesome!
 
-[easy tag]: https://github.com/hyperium/hyper/issues?q=label%3AE-easy+is%3Aopen
+Contributions come in all shapes and sizes. Let's take a tour of some of the different ways you could contribute.
 
+## [Code of Conduct](./docs/CODE_OF_CONDUCT.md)
 
-## Pull Requests
+Firstly, all interactions with the project need to abide by the code of conduct. This makes sure everyone is treated kindly.
 
-When submitting a Pull Request, please have your commits follow these guidelines:
+## [Issues](./docs/ISSUES.md)
 
-### Git Commit Guidelines
+- **Filing an issue** is a contribution. We appreciate you letting us know about bugs you've found, and any information that you can provide that we can use to make hyper better. Without your filing it, we may not be aware of the bug.
+- [Triaging issues](./docs/ISSUES.md#triaging) is a huge help. By your helping make issues better, the reporters can get answers sooner, and others can fix them with less effort. You can also volunteer as a frequent [triager](./docs/MAINTAINERS.md#triagers).
+- Discuss [feature requests][feat] (especially those marked [request-for-comment][b-rfc]).
 
-These guidelines have been copied from the [AngularJS](https://github.com/angular/angular.js/blob/master/CONTRIBUTING.md#-git-commit-guidelines)
-project.
-
-We have very precise rules over how our git commit messages can be formatted.  This leads to **more
-readable messages** that are easy to follow when looking through the **project history**.  But also,
-we use the git commit messages to **generate the change log**.
-
-#### Commit Message Format
-Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
-format that includes a **type**, a **scope** and a **subject**:
-
-```
-<type>(<scope>): <subject>
-<BLANK LINE>
-<body>
-<BLANK LINE>
-<footer>
-```
-
-Any line of the commit message cannot be longer 100 characters! This allows the message to be easier
-to read on github as well as in various git tools.
-
-#### Type
-Must be one of the following:
-
-* **feat**: A new feature
-* **fix**: A bug fix
-* **docs**: Documentation only changes
-* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing
-  semi-colons, etc)
-* **refactor**: A code change that neither fixes a bug or adds a feature
-* **perf**: A code change that improves performance
-* **test**: Adding missing tests
-* **chore**: Changes to the build process or auxiliary tools and libraries such as documentation
-    generation
-
-#### Scope
-The scope should refer to a module in hyper that is being touched. Examples:
-
-* headers
-* client
-* server
-* http
-* method
-* net
-* status
-* version
-
-#### Subject
-
-The subject contains succinct description of the change:
-
-* use the imperative, present tense: "change" not "changed" nor "changes"
-* don't capitalize first letter
-* no dot (.) at the end
-
-#### Body
-
-Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes"
-The body should include the motivation for the change and contrast this with previous behavior.
-
-#### Footer
-
-The footer should contain any information about **Breaking Changes** and is also the place to
-reference GitHub issues that this commit **Closes**.
-
-The last line of commits introducing breaking changes should be in the form `BREAKING CHANGE: <desc>`
+[feat]: https://github.com/hyperium/hyper/issues?q=is%3Aissue+is%3Aopen+label%3AC-feature
+[b-rfc]: https://github.com/hyperium/hyper/issues?q=is%3Aissue+is%3Aopen+label%3AB-rfc
 
 
-A detailed explanation can be found in this [document][commit-message-format].
+## [Pull Requests](./docs/PULL_REQUESTS.md)
 
-[commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
+By the way, consider checking the [list of easy issues](https://github.com/hyperium/hyper/issues?q=is%3Aopen+is%3Aissue+label%3AE-easy) if you want to submit something.
+
+- [Submitting a Pull Request](./docs/PULL_REQUESTS.md#submitting-a-pull-request)
+- [Commit Guidelines](./docs/COMMITS.md)
+
+## Documentation
+
+Improving hyper's documentation is a huge help for everyone who is trying to _use_ hyper.
+
+- The API [documentation](https://docs.rs/hyper) is stored as rustdoc comments directly in the source.
+- The main website has [tutorial-style guides](https://hyper.rs/guides). As of v1, they are currently in a [revamp](https://github.com/hyperium/hyper/issues/3411), and would greatly benefit from being filled out.
+
+## Help
+
+Helping others use hyper in their specific workflows is a very valuable way to contribute.
+
+- Answer questions asked directly in hyper's [Discussions](https://github.com/hyperium/hyper/discussions).
+- Join our [Discord](https://discord.gg/kkwpueZ) and help those who show up with questions.
+- **Blog about hyper.** You writing a blog post about how you use hyper to do something specific, or how you contributed a new feature, or debugged something in it, is a great idea. Not all examples can fit in the hyper repo. Search engines will help people find their use cases on your blog. And you can describe processes in more depth or from a different perspective.
